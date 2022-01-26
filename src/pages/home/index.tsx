@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useWallet } from 'use-wallet';
 import { Radio, Select, Form, Button } from 'antd';
 import contract from '@/contracts/NFT';
-import { contract_address, month_to_gz, day_to_gz, hour_to_gz } from './vars';
+import { contract_address, contract_address_bsctest, month_to_gz, day_to_gz, hour_to_gz } from './vars';
 import styles from './index.less';
 
 const { Option } = Select;
@@ -41,6 +41,23 @@ export default function IndexPage() {
   const [tokenId, setTokenId] = useState<number>();
   const [tx, setTx] = useState('');
 
+  let contract_addr = contract_address;
+  let link_contract = `https://ropsten.etherscan.io/address/${contract_addr}`;
+  let link_tx = `https://ropsten.etherscan.io/tx/${tx}`;
+  if (wallet?.chainId === 97) {
+    contract_addr = contract_address_bsctest;
+    link_contract = `https://testnet.bscscan.com/address/${contract_addr}`;
+    link_tx = `https://testnet.bscscan.com/tx/${tx}`;
+  }
+
+  const getToken = async () => {
+    // console.log('res: ', res);
+    // const id = parseInt(res.events.Transfer.returnValues._tokenId);
+    // console.log('id: ', id);
+    // setTokenId(id);
+    // const tokenURI = await contract.methods.tokenURI(id).call();
+  };
+
   const onFinish = async (e: any) => {
     const { gender, year, month, day, hour } = e;
 
@@ -59,7 +76,6 @@ export default function IndexPage() {
       console.log('id: ', id);
       setTokenId(id);
       const tokenURI = await contract.methods.tokenURI(id).call();
-
       const baseURI = await contract.methods.baseURI().call();
       const fullURI = `${baseURI}${tokenURI}`;
 
@@ -76,16 +92,17 @@ export default function IndexPage() {
       <div className={styles.title}>称骨算命</div>
 
       <div className={styles.wrapContractInfo}>
+        <span>Network: {wallet?.networkName}</span>
         <span>
           Contract:{' '}
-          <a href={`https://ropsten.etherscan.io/address/${contract_address}`} target="_blank">
-            {contract_address}
+          <a href={link_contract} target="_blank">
+            {contract_addr}
           </a>
         </span>
 
         <span>
           Tx:{' '}
-          <a href={`https://ropsten.etherscan.io/tx/${tx}`} target="_blank">
+          <a href={link_tx} target="_blank">
             {tx}
           </a>
         </span>

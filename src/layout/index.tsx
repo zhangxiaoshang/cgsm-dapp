@@ -65,7 +65,7 @@ const BasicLayout: React.FC = ({ children }) => (
     connectors={{
       injected: {
         //allows you to connect and switch between mainnet and rinkeby within Metamask.
-        chainId: [1, 3, 4],
+        chainId: [1, 3, 4, 97],
       },
       fortmatic: {
         chainId: [1],
@@ -80,6 +80,7 @@ const BasicLayout: React.FC = ({ children }) => (
           1: 'https://mainnet.infura.io/v3/a0d8c94ba9a946daa5ee149e52fa5ff1',
           3: 'https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
           4: 'https://rinkeby.infura.io/v3/a0d8c94ba9a946daa5ee149e52fa5ff1',
+          97: 'https://data-seed-prebsc-1-s1.binance.org:8545',
         },
         bridge: 'https://bridge.walletconnect.org',
         pollingInterval: 12000,

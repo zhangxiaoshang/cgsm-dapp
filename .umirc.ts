@@ -1,6 +1,10 @@
 import { defineConfig } from 'umi';
 
 export default defineConfig({
+  publicPath: '/cgsm-dapp/',
+  hash: true,
+  history: { type: 'hash' },
+
   nodeModulesTransform: {
     type: 'none',
   },

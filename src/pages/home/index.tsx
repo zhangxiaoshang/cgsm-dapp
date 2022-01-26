@@ -48,23 +48,27 @@ export default function IndexPage() {
 
     setLoading(true);
 
-    const res = await contract.methods
-      .mint(gender === 2, year, month, day, hour, wallet.account)
-      .send({ from: wallet.account, value: 1000 });
+    try {
+      const res = await contract.methods
+        .mint(gender === 2, year, month, day, hour, wallet.account)
+        .send({ from: wallet.account, value: 1000 });
 
-    console.log('res: ', res);
-    const id = parseInt(res.events.Transfer.returnValues._tokenId);
+      console.log('res: ', res);
+      const id = parseInt(res.events.Transfer.returnValues._tokenId);
 
-    console.log('id: ', id);
-    setTokenId(id);
-    const tokenURI = await contract.methods.tokenURI(id).call();
+      console.log('id: ', id);
+      setTokenId(id);
+      const tokenURI = await contract.methods.tokenURI(id).call();
 
-    const baseURI = await contract.methods.baseURI().call();
-    const fullURI = `${baseURI}${tokenURI}`;
+      const baseURI = await contract.methods.baseURI().call();
+      const fullURI = `${baseURI}${tokenURI}`;
 
-    setTx(res.transactionHash);
-    setMetadataURI(fullURI);
-    setLoading(false);
+      setTx(res.transactionHash);
+      setMetadataURI(fullURI);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+    }
   };
 
   return (

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'umi';
 import { useWallet } from 'use-wallet';
-import { Radio, Select, Form, Button, Input, message } from 'antd';
+import { Radio, Select, Form, Button, Input, message, Space } from 'antd';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import ArtImage from '@/components/ArtImage';
 
@@ -35,6 +35,8 @@ export default function IndexPage() {
   const [lastTx, setLastTx] = useState('');
   const [total, setTotal] = useState<number>(); // NFT 总数
 
+  const [artURLs, setArtURLs] = useState<string[]>([]);
+
   const [form] = Form.useForm();
 
   const chainId = wallet.chainId || 97;
@@ -55,7 +57,7 @@ export default function IndexPage() {
 
   useEffect(() => {
     initBaseURI();
-  }, [wallet]);
+  }, [wallet.chainId]);
 
   useEffect(() => {
     setup(wallet.account);
@@ -64,6 +66,26 @@ export default function IndexPage() {
   useEffect(() => {
     form.setFieldsValue({ from: query.from });
   }, [query.from]);
+
+  useEffect(() => {
+    if (total && contract && wallet?.account) {
+      (async () => {
+        let urls = [];
+        for (let i = 0; i < total; i++) {
+          try {
+            const id = await contract.methods.tokenOfOwnerByIndex(wallet.account, i).call();
+            const file = await contract.methods.tokenURI(id).call();
+
+            urls.push(`${baseURI}${file}`);
+          } catch (error) {
+            console.log(error);
+          }
+        }
+
+        setArtURLs(urls);
+      })();
+    }
+  }, [total, contract, wallet]);
 
   const setup = async (account: string | null) => {
     if (!account || !contract) return;
@@ -145,7 +167,13 @@ export default function IndexPage() {
         <span>NFT Total: {total}</span>
       </div>
 
-      <ArtImage metaURI={tokenPath ? `${baseURI}${tokenPath}` : ''}></ArtImage>
+      <div className={styles.wrapImages}>
+        <Space size={15} wrap>
+          {artURLs.map((url) => (
+            <ArtImage key={url} metaURI={url}></ArtImage>
+          ))}
+        </Space>
+      </div>
 
       <div className={styles.content}>
         <Form

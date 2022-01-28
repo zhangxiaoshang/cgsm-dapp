@@ -291,6 +291,49 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_isLady",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint16",
+        "name": "_year",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_month",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_day",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_hour",
+        "type": "uint8"
+      },
+      {
+        "internalType": "address",
+        "name": "_to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_from_id",
+        "type": "uint256"
+      }
+    ],
+    "name": "mint",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "name",
     "outputs": [
@@ -440,6 +483,49 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "_index",
+        "type": "uint256"
+      }
+    ],
+    "name": "tokenByIndex",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_index",
+        "type": "uint256"
+      }
+    ],
+    "name": "tokenOfOwnerByIndex",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "_tokenId",
         "type": "uint256"
       }
@@ -461,7 +547,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "_totalSupply",
+        "name": "",
         "type": "uint256"
       }
     ],

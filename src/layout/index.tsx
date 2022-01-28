@@ -9,8 +9,6 @@ const AppHeader: React.FC = () => {
   const wallet = useWallet();
   const activate = (connector: string) => wallet.connect(connector);
 
-  console.log('wallet: ', wallet);
-
   if (wallet.error?.name) {
     return (
       <Header style={{ background: '#fff' }}>

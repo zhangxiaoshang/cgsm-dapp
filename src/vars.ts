@@ -4,6 +4,8 @@ export const contract_address = '0x791e1Eb63797e82244167872791b2C62eE26C5Ca';
 // export const contract_address_bsctest = '0xA497Bd5546c4014C06127224c2B75f7eB4E33FFE';
 export const contract_address_bsctest = '0x1F4f0E4Ca2a0f62CF0e4A1A08B10a4062E1086E7';
 
+export const contract_address_ropsten = '0x801b7475Afb09d8D36DAd066358aB1A095f3FA76';
+
 export const IMAGE_BASEURL = 'https://gateway.pinata.cloud/ipfs/QmcY4Uz1ozJsFf6bFQyNDTGLdBB5LhCX4yDMpkoe2nZGuJ/';
 export const METADATA_BASEURL = 'https://gateway.pinata.cloud/ipfs/QmNx5X1r5DBFG2e16NmPZGghUAMMwVxPWjEhUrX9tkjgWC/';
 
@@ -151,8 +153,23 @@ export const hour_to_gz = [
 ];
 
 export const contractConfig: any = {
-  BSC_TEST_NFT: {
+  3: {
+    abi: NFTABI,
+    address: contract_address_ropsten,
+  },
+  97: {
     abi: NFTABI,
     address: contract_address_bsctest,
+  },
+};
+
+export const chainConfig: any = {
+  3: {
+    address_link_prefix: 'https://ropsten.etherscan.io/address/',
+    tx_link_prefix: 'https://ropsten.etherscan.io/tx/',
+  },
+  97: {
+    address_link_prefix: 'https://testnet.bscscan.com/address/',
+    tx_link_prefix: 'https://testnet.bscscan.com/tx/',
   },
 };

@@ -3,17 +3,12 @@ import { useLocation } from 'umi';
 import { useWallet } from 'use-wallet';
 import { Radio, Select, Form, Button, Input, message } from 'antd';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import contract from '@/contracts/NFT';
-import {
-  contract_address,
-  contract_address_bsctest,
-  month_to_gz,
-  day_to_gz,
-  hour_to_gz,
-  METADATA_BASEURL,
-} from '../../vars';
+import ArtImage from '@/components/ArtImage';
+
+import { month_to_gz, day_to_gz, hour_to_gz, METADATA_BASEURL, contractConfig, chainConfig } from '../../vars';
 import Web3 from 'web3';
 import styles from './index.less';
+import useContract from '@/hooks/useContract';
 
 const { Option } = Select;
 
@@ -26,59 +21,52 @@ for (let i = 1924; i <= 2030; i++) {
   );
 }
 
-const ArtImage: React.FC<{ uri: string }> = ({ uri }) => {
-  if (!uri) return null;
-
-  const [url, setUrl] = useState('');
-
-  fetch(uri)
-    .then((response) => response.json())
-    .then((data) => {
-      setUrl(data.image);
-    })
-    .catch((err) => {
-      // console.log(err);
-    });
-
-  return url ? <img src={url} className={styles.ArtImage}></img> : null;
-};
-
 export default function IndexPage() {
   const { query }: any = useLocation();
+  const wallet = useWallet();
+  const contract = useContract(wallet.chainId);
+
   const [baseURI, setBaseURI] = useState(METADATA_BASEURL);
   const [tokenPath, setTokenPath] = useState('');
 
-  console.log(query.from);
-
-  const wallet = useWallet();
-  const [metadataURI, setMetadataURI] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const [tokenId, setTokenId] = useState<number>();
-  const [tx, setTx] = useState('');
+  const [currentTokenId, setCurrentTokenId] = useState<number>();
+  const [lastTx, setLastTx] = useState('');
+  const [total, setTotal] = useState<number>(); // NFT 总数
 
   const [form] = Form.useForm();
 
-  let contract_addr = contract_address;
-  let link_contract = `https://ropsten.etherscan.io/address/${contract_addr}`;
-  let link_tx = `https://ropsten.etherscan.io/tx/${tx}`;
-  if (wallet?.chainId === 97) {
-    contract_addr = contract_address_bsctest;
-    link_contract = `https://testnet.bscscan.com/address/${contract_addr}`;
-    link_tx = `https://testnet.bscscan.com/tx/${tx}`;
+  const chainId = wallet.chainId || 97;
+  const contractCfg = contractConfig[chainId];
+  const chainCfg = chainConfig[chainId];
+
+  let contract_addr = '';
+  let link_contract = '';
+  let link_tx = '';
+  if (contractCfg) {
+    contract_addr = contractCfg.address;
+  }
+
+  if (chainCfg) {
+    link_contract = `${chainCfg.address_link_prefix}${contract_addr}`;
+    link_tx = `${chainCfg.tx_link_prefix}${lastTx}`;
   }
 
   useEffect(() => {
-    console.log('wallet.account: ', wallet.account);
+    initBaseURI();
+  }, [wallet]);
+
+  useEffect(() => {
     setup(wallet.account);
-  }, [wallet.account]);
+  }, [wallet.account, contract]);
 
   useEffect(() => {
     form.setFieldsValue({ from: query.from });
   }, [query.from]);
 
   const setup = async (account: string | null) => {
-    if (!account) return;
+    if (!account || !contract) return;
 
     try {
       const balance = await contract.methods.balanceOf(account).call();
@@ -86,7 +74,8 @@ export default function IndexPage() {
         const tokenId = await contract.methods.tokenOfOwnerByIndex(wallet.account, balance - 1).call();
         const tokenPath = await contract.methods.tokenURI(tokenId).call();
 
-        setTokenId(tokenId);
+        setTotal(balance);
+        setCurrentTokenId(tokenId);
         setTokenPath(tokenPath);
       }
     } catch (error) {
@@ -96,8 +85,6 @@ export default function IndexPage() {
 
   const onFinish = async (e: any) => {
     const { gender, year, month, day, hour, from } = e;
-
-    console.log({ gender, year, month, day, hour, from });
 
     setLoading(true);
     try {
@@ -114,17 +101,8 @@ export default function IndexPage() {
           .send({ from: wallet.account, value: Web3.utils.toWei('0.01') });
       }
 
-      console.log('res: ', res);
-      const id = parseInt(res.events.Transfer.returnValues._tokenId);
-
-      console.log('id: ', id);
-      setTokenId(id);
-      const tokenURI = await contract.methods.tokenURI(id).call();
-      const baseURI = await contract.methods.baseURI().call();
-      const fullURI = `${baseURI}${tokenURI}`;
-
-      setTx(res.transactionHash);
-      setMetadataURI(fullURI);
+      setup(wallet.account);
+      setLastTx(res.transactionHash);
       setLoading(false);
     } catch (error) {
       console.error(error);
@@ -132,14 +110,22 @@ export default function IndexPage() {
     }
   };
 
-  const copyLink = () => {};
+  const initBaseURI = async () => {
+    try {
+      if (!contract) return;
+      const uri = await contract.methods.baseURI().call();
+      if (uri) {
+        setBaseURI(uri);
+      }
+    } catch (error) {}
+  };
 
   return (
     <div className={styles.main}>
       <div className={styles.title}>称骨算命</div>
 
       <div className={styles.wrapContractInfo}>
-        <span>Network: {wallet?.networkName}</span>
+        <span>Current Network: {wallet?.networkName}</span>
         <span>
           Contract:{' '}
           <a href={link_contract} target="_blank">
@@ -148,16 +134,18 @@ export default function IndexPage() {
         </span>
 
         <span>
-          Tx:{' '}
+          Last Tx:{' '}
           <a href={link_tx} target="_blank">
-            {tx}
+            {lastTx}
           </a>
         </span>
 
-        <span>NFT id: {tokenId}</span>
+        <span>Last Token ID: {currentTokenId}</span>
+
+        <span>NFT Total: {total}</span>
       </div>
 
-      <ArtImage uri={tokenPath ? `${baseURI}${tokenPath}` : ''}></ArtImage>
+      <ArtImage metaURI={tokenPath ? `${baseURI}${tokenPath}` : ''}></ArtImage>
 
       <div className={styles.content}>
         <Form
@@ -211,12 +199,12 @@ export default function IndexPage() {
           </Form.Item>
 
           <Button type="primary" htmlType="submit" size="large" shape="round" block loading={loading}>
-            测算
+            卜一卦
           </Button>
 
-          {!!tokenId && (
+          {!!currentTokenId && (
             <CopyToClipboard
-              text={`https://zhangxiaoshang.github.io/cgsm-dapp/#/home?from=${tokenId}`}
+              text={`https://zhangxiaoshang.github.io/cgsm-dapp/#/home?from=${currentTokenId}`}
               onCopy={() => message.success('Copied')}
             >
               <Button type="default" size="large" shape="round" block style={{ marginTop: '12px' }}>
